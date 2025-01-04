@@ -16,12 +16,28 @@ const (
 
 type IcebreakerResult struct {
 	IcebreakerID int    `json:"icebreaker_id"`
-	Result       bool   `json:"result"`
+	Result       int   `json:"result"`
 	Token        string `json:"token"`
 }
 
 type RequestBody struct {
 	IcebreakerID int `json:"icebreaker_id"`
+}
+
+// Функция для преобразования числа в соответствующее слово
+func getResultWord(result int) string {
+	switch result {
+	case 0:
+		return "Ошибка"
+	case 1:
+		return "В работе"
+	case 2:
+		return "Успех"
+	case 3:
+		return "Потеря"
+	default:
+		return "Неизвестный статус"
+	}
 }
 
 func main() {
@@ -47,12 +63,21 @@ func handleProcess(w http.ResponseWriter, r *http.Request) {
 	icebreakerID := requestBody.IcebreakerID
 	fmt.Println("Icebreaker ID:", icebreakerID)
 
-	// Генерация случайного результата
-	result := rand.Float64() < 0.5 // 50% шанс на true или false
+	randomValue := rand.Float64()
+	var result int
+	if randomValue < 0.5 {
+		result  = 2
+	} else {
+		result = 3
+	}
+
+	// // Генерация случайного результата
+	// result := rand.Float64() < 0.5 // 50% шанс на true или false
 
 	// Успешный ответ в формате JSON
 	successMessage := map[string]interface{}{
 		"message": "Successful",
+		"result": getResultWord(result),
 		"data": IcebreakerResult{
 			IcebreakerID: icebreakerID,
 			Result:       result,
@@ -72,7 +97,7 @@ func handleProcess(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 
 	go func() {
-		// Задержка 5 секунд
+		// Задержка 10 секунд
 		delay := 10
 		time.Sleep(time.Duration(delay) * time.Second)
 
